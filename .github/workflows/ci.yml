@@ -68,7 +68,7 @@ jobs:
           flyctl secrets set --stage -a "$APP" \
             PMINING_URL=https://driftor-asc-pmining.fly.dev \
             IPDD_URL=https://driftor-asc-ipdd.fly.dev \
-            FN_ADWIN_URL=https://driftor-asc-fn-adwin.azurewebsites.net
+            FN_ADWIN_URL=https://driftor-asc-fn-adwin-dsa6htarh3avfag4.brazilsouth-01.azurewebsites.net
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
       - name: deploy a partir da imagem do docker hub
