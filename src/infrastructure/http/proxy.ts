@@ -1,18 +1,19 @@
 import type { Request, Response } from 'express';
 
-// "expect: 100-continue" (curl em uploads grandes) é recusado pelo fetch do Node.
-const HOP_BY_HOP = new Set(['connection', 'keep-alive', 'transfer-encoding', 'host', 'content-length', 'upgrade', 'expect']);
-
 /**
- * Repassa a requisição ao microsserviço e devolve a resposta como veio.
- * Upload multipart segue em stream (o Nest não consome esse corpo); JSON é
- * reserializado a partir do corpo já lido.
+ * Só estes cabeçalhos seguem para o microsserviço. Os do navegador (Origin,
+ * Accept-Encoding com br/zstd, sec-fetch-*, cookies) e os do API Management
+ * ficam no BFF: o microsserviço responde sempre sem compressão, e o BFF
+ * devolve exatamente os bytes que leu.
  */
+const FORWARDED = ['content-type', 'accept', 'accept-language'];
+
 export async function forward(req: Request, res: Response, baseUrl: string, path: string, timeoutMs: number) {
   const query = req.originalUrl.includes('?') ? req.originalUrl.slice(req.originalUrl.indexOf('?')) : '';
-  const headers: Record<string, string> = {};
-  for (const [key, value] of Object.entries(req.headers)) {
-    if (!HOP_BY_HOP.has(key) && typeof value === 'string' && !key.startsWith('ocp-apim')) headers[key] = value;
+  const headers: Record<string, string> = { 'accept-encoding': 'identity' };
+  for (const key of FORWARDED) {
+    const value = req.headers[key];
+    if (typeof value === 'string') headers[key] = value;
   }
   const contentType = String(req.headers['content-type'] ?? '');
   let body: any = undefined;
@@ -30,10 +31,13 @@ export async function forward(req: Request, res: Response, baseUrl: string, path
       signal: AbortSignal.timeout(timeoutMs),
     };
     const upstream = await fetch(`${baseUrl.replace(/\/$/, '')}${path}${query}`, init);
+    const payload = Buffer.from(await upstream.arrayBuffer());
     res.status(upstream.status);
     const type = upstream.headers.get('content-type');
     if (type) res.setHeader('content-type', type);
-    res.send(Buffer.from(await upstream.arrayBuffer()));
+    res.setHeader('cache-control', 'no-store');
+    if (upstream.status === 204 || upstream.status === 304) res.end();
+    else res.send(payload);
   } catch (err) {
     res.status(502).json({ detail: `Serviço indisponível: ${(err as Error).message}` });
   }

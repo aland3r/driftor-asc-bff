@@ -20,7 +20,9 @@ function fakeUpstream(): Promise<Server> {
   app.patch('/analyses/:id', (req, res) => res.json({ id: req.params.id, name: req.body.name }));
   app.get('/analyses', (req, res) => res.json([{ id: 'a1', q: req.query.processId }]));
   app.delete('/processes/:id', (_req, res) => res.status(204).end());
-  app.get('/processes/:id', (_req, res) => res.status(404).json({ detail: 'Processo não encontrado.' }));
+  app.get('/processes/:id', (req, res) =>
+    req.params.id === 'headers' ? res.json(req.headers) : res.status(404).json({ detail: 'Processo não encontrado.' }),
+  );
   return new Promise((resolve) => {
     const server = app.listen(0, () => resolve(server));
   });
@@ -65,6 +67,19 @@ describe('BFF HTTP', () => {
     expect((await http.get('/analyses?processId=p1').expect(200)).body[0].q).toBe('p1');
     await http.delete('/processes/p1').expect(204);
     expect((await http.get('/processes/x').expect(404)).body.detail).toContain('não encontrado');
+  });
+
+  it('não repassa cabeçalhos do navegador nem pede compressão ao microsserviço', async () => {
+    const res = await request(app.getHttpServer())
+      .get('/processes/headers')
+      .set('Origin', 'https://driftor-asc-mfe.vercel.app')
+      .set('Accept-Encoding', 'gzip, deflate, br, zstd')
+      .set('Ocp-Apim-Subscription-Key', 'k')
+      .expect(200);
+    expect(res.headers['cache-control']).toBe('no-store');
+    expect(res.body['accept-encoding']).toBe('identity');
+    expect(res.body.origin).toBeUndefined();
+    expect(res.body['ocp-apim-subscription-key']).toBeUndefined();
   });
 
   it('publica swagger, documentação e valida aggregated-data', async () => {
