@@ -6,7 +6,7 @@ Backend for Frontend do **Driftor ASC**, entrega 3 de Arquitetura e Soluções C
 
 | | URL |
 |---|---|
-| Pelo API Management (usado pelo front) | https://driftor-asc-apim.azure-api.net |
+| Pelo API Management (usado pelo front) | https://driftor-asc-apim.azure-api.net/api |
 | BFF direto | https://driftor-asc-bff.fly.dev |
 | Swagger | https://driftor-asc-bff.fly.dev/docs |
 | Imagem | [aland3r/driftor-asc-bff](https://hub.docker.com/r/aland3r/driftor-asc-bff) |
