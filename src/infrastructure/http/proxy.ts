@@ -1,6 +1,7 @@
 import type { Request, Response } from 'express';
 
-const HOP_BY_HOP = new Set(['connection', 'keep-alive', 'transfer-encoding', 'host', 'content-length', 'upgrade']);
+// "expect: 100-continue" (curl em uploads grandes) é recusado pelo fetch do Node.
+const HOP_BY_HOP = new Set(['connection', 'keep-alive', 'transfer-encoding', 'host', 'content-length', 'upgrade', 'expect']);
 
 /**
  * Repassa a requisição ao microsserviço e devolve a resposta como veio.

@@ -38,7 +38,8 @@ export class GetOverviewHandler {
   private async attempt<T>(source: 'ipdd' | 'pmining' | 'fnAdwin', call: () => Promise<T>): Promise<SourceResult<T>> {
     const started = this.clock.now();
     try {
-      return partial(source, started, this.clock.now(), await call());
+      const value = await call(); // mede depois da resposta, não antes
+      return partial(source, started, this.clock.now(), value);
     } catch (err) {
       return partial<T>(source, started, this.clock.now(), null, err);
     }
