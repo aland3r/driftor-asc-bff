@@ -11,10 +11,11 @@ import { configure } from '../../src/api/main';
 function fakeUpstream(): Promise<Server> {
   const app = express();
   app.use(express.json());
-  app.post('/processes', (req, res) => {
+  app.post('/processes', (req, res) => res.status(201).json({ id: 'p1', status: 'vazio', name: req.body.name }));
+  app.post('/processes/:id/log', (req, res) => {
     let size = 0;
     req.on('data', (c) => (size += c.length));
-    req.on('end', () => res.status(201).json({ id: 'p1', multipart: String(req.headers['content-type']).startsWith('multipart/'), size }));
+    req.on('end', () => res.json({ id: req.params.id, multipart: String(req.headers['content-type']).startsWith('multipart/'), size }));
   });
   app.patch('/analyses/:id', (req, res) => res.json({ id: req.params.id, name: req.body.name }));
   app.get('/analyses', (req, res) => res.json([{ id: 'a1', q: req.query.processId }]));
@@ -49,12 +50,11 @@ describe('BFF HTTP', () => {
     upstream.close();
   });
 
-  it('repassa upload multipart em stream', async () => {
-    const res = await request(app.getHttpServer())
-      .post('/processes')
-      .field('name', 'Torno')
-      .attach('file', Buffer.from('Case;Atividade\n1;A'), 'log.csv')
-      .expect(201);
+  it('cria o processo vazio e repassa o upload do log em stream', async () => {
+    const http = request(app.getHttpServer());
+    expect((await http.post('/processes').send({ name: 'Torno' }).expect(201)).body).toEqual({ id: 'p1', status: 'vazio', name: 'Torno' });
+    const res = await http.post('/processes/p1/log').attach('file', Buffer.from('Case;Atividade\n1;A'), 'log.csv').expect(200);
+    expect(res.body.id).toBe('p1');
     expect(res.body.multipart).toBe(true);
     expect(res.body.size).toBeGreaterThan(20);
   });
@@ -70,7 +70,7 @@ describe('BFF HTTP', () => {
   it('publica swagger, documentação e valida aggregated-data', async () => {
     const http = request(app.getHttpServer());
     const docs = await http.get('/docs-json').expect(200);
-    expect(Object.keys(docs.body.paths)).toEqual(expect.arrayContaining(['/aggregated-data', '/processes', '/analyses/{id}']));
+    expect(Object.keys(docs.body.paths)).toEqual(expect.arrayContaining(['/aggregated-data', '/processes', '/processes/{id}/log', '/analyses/{id}']));
     expect((await http.get('/documentation/arc42').expect(200)).text).toBe('# Driftor');
     await http.get('/aggregated-data').expect(422);
   });

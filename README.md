@@ -39,7 +39,7 @@ A análise vem primeiro (ela diz qual é o processo); pmining e Function são ch
 
 | Rota | Destino |
 |---|---|
-| `/processes`, `/processes/{id}`, `/processes/{id}/operations`, `/processes/{id}/traces`, `/processes/{id}/series`, `/activities` | pmining |
+| `/processes`, `/processes/{id}`, `/processes/{id}/log`, `/processes/{id}/operations`, `/processes/{id}/traces`, `/processes/{id}/series`, `/activities` | pmining |
 | `/analyses`, `/analyses/{id}` | ipdd |
 | `GET /overview` | dashboard: processos, análises e saúde da Function, em paralelo |
 | `GET /documentation/arc42` | o arc42 do projeto em Markdown, com cache de 10 minutos |

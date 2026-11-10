@@ -9,8 +9,8 @@ export const UPSTREAMS = Symbol('Upstreams');
 const uploadSchema = {
   schema: {
     type: 'object',
-    required: ['name', 'file'],
-    properties: { name: { type: 'string', example: 'Torno 02' }, file: { type: 'string', format: 'binary' } },
+    required: ['file'],
+    properties: { file: { type: 'string', format: 'binary' } },
   },
 };
 
@@ -24,11 +24,18 @@ export class ProcessesProxyController {
   }
 
   @Post()
-  @ApiOperation({ summary: 'Cria o processo a partir do event log (.xes ou .csv)' })
-  @ApiConsumes('multipart/form-data')
-  @ApiBody(uploadSchema)
+  @ApiOperation({ summary: 'Cria o processo vazio, só com o nome (status vazio)' })
+  @ApiBody({ schema: { example: { name: 'Torno 02' } } })
   create(@Req() req: Request, @Res() res: Response) {
     return this.to(req, res, '/processes');
+  }
+
+  @Post(':id/log')
+  @ApiOperation({ summary: 'Carrega o event log (.xes ou .csv) do processo; volta com as operações a mapear' })
+  @ApiConsumes('multipart/form-data')
+  @ApiBody(uploadSchema)
+  uploadLog(@Req() req: Request, @Res() res: Response) {
+    return this.to(req, res, `/processes/${encodeURIComponent(String(req.params.id))}/log`);
   }
 
   @Get()
@@ -45,7 +52,7 @@ export class ProcessesProxyController {
 
   @Put(':id/operations')
   @ApiOperation({ summary: 'Mapeia operações para atividades' })
-  @ApiBody({ schema: { example: { operations: [{ rawLabel: 'Machine_Operating', activity: 'Machine_Operating' }] } } })
+  @ApiBody({ schema: { example: { operations: [{ rawLabel: 'Machine_Operating', activity: 'Machine_Operating', description: 'Máquina em operação' }] } } })
   map(@Req() req: Request, @Res() res: Response) {
     return this.to(req, res, `/processes/${encodeURIComponent(String(req.params.id))}/operations`);
   }
