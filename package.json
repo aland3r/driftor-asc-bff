@@ -1,0 +1,36 @@
+{
+  "name": "driftor-asc-bff",
+  "version": "1.0.0",
+  "private": true,
+  "description": "BFF do Driftor ASC: entrada única do front, proxy dos CRUDs e GET /aggregated-data.",
+  "license": "MIT",
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "start": "node dist/api/main.js",
+    "dev": "ts-node src/api/main.ts",
+    "test": "jest && npm run test:arch",
+    "test:arch": "depcruise src --config .dependency-cruiser.cjs",
+    "lint:types": "tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "@nestjs/common": "11.1.6",
+    "@nestjs/core": "11.1.6",
+    "@nestjs/platform-express": "11.1.6",
+    "@nestjs/swagger": "11.2.0",
+    "reflect-metadata": "0.2.2",
+    "rxjs": "7.8.2"
+  },
+  "devDependencies": {
+    "@nestjs/testing": "11.1.6",
+    "@types/express": "5.0.3",
+    "@types/jest": "29.5.14",
+    "@types/node": "22.15.30",
+    "@types/supertest": "6.0.3",
+    "dependency-cruiser": "16.10.4",
+    "jest": "29.7.0",
+    "supertest": "7.1.4",
+    "ts-jest": "29.4.1",
+    "ts-node": "10.9.2",
+    "typescript": "5.9.2"
+  }
+}
