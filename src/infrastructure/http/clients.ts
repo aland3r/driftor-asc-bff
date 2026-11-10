@@ -15,7 +15,7 @@ export function upstreamsFromEnv(): Upstreams {
     ipddUrl: process.env.IPDD_URL ?? 'http://localhost:8082',
     fnAdwinUrl: process.env.FN_ADWIN_URL ?? 'http://localhost:7071',
     arc42Url:
-      process.env.ARC42_URL ?? 'https://raw.githubusercontent.com/aland3r/deviante-docs/main/architecture/arc42.md',
+      process.env.ARC42_URL ?? 'https://raw.githubusercontent.com/aland3r/deviante-docs/main/driftor/arc42.md',
     timeoutMs: Number(process.env.UPSTREAM_TIMEOUT_MS ?? 10000),
     functionTimeoutMs: Number(process.env.FUNCTION_TIMEOUT_MS ?? 20000),
   };
